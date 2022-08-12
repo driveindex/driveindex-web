@@ -1,10 +1,21 @@
+import 'package:dio/dio.dart';
 import 'package:driveindex_web/module/dio_client.dart';
+import 'package:driveindex_web/util/config_manager.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 class AdminCommonModule {
   static Future<Map<String, dynamic>> getAzureClient() async {
-    return (await DioClient.get("/api/azure/azure_client")).data!;
+    return (await DioClient.get(
+      "/api/admin/azure_client",
+      options: await _adminHeader
+    )).data!;
   }
+
+  static Future<Options> get _adminHeader async => Options(
+    headers: {
+      "DriveIndex-Authentication": (await ConfigManager.ADMIN_TOKEN)
+    }
+  );
 }
 
 typedef AdminTreeResponse = RequestResult<List<AzureClient>>;
