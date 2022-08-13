@@ -3,11 +3,26 @@ import 'package:driveindex_web/module/dio_client.dart';
 import 'package:driveindex_web/util/config_manager.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-class AdminCommonModule {
+class AdminModule {
+  static Future<Map<String, dynamic>> checkLogin() async {
+    return (await DioClient.get(
+      "/api/admin/token_state",
+      options: await _adminHeader,
+    )).data!;
+  }
+
   static Future<Map<String, dynamic>> getAzureClient() async {
     return (await DioClient.get(
       "/api/admin/azure_client",
-      options: await _adminHeader
+      options: await _adminHeader,
+    )).data!;
+  }
+
+  static Future<Map<String, dynamic>> changePassword(String old, String newPass, String repeat) async {
+    return (await DioClient.post(
+      "/api/admin/password",
+      data: { "old_pass": old, "new_pass": newPass, "repeat_pass": repeat },
+      options: await _adminHeader,
     )).data!;
   }
 

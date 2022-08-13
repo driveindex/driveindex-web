@@ -19,6 +19,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _password = TextEditingController();
+  bool _passwordVisible = false;
 
   bool _loading = false;
 
@@ -53,9 +54,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 30),
                     TextField(
                       controller: _password,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
+                      obscureText: !_passwordVisible,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
                         labelText: "请输入管理员密码",
+                        suffixIcon: IconButton(
+                          icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
+                          onPressed: () {
+                            setState(() {
+                              _passwordVisible = !_passwordVisible;
+                            });
+                          },
+                        ),
                       ),
                       enabled: !_loading,
                     ),
@@ -70,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                           return;
                         }
-                        login(password, (String token) {
+                        _login(password, (String token) {
                           ConfigManager.HAS_LOGIN = Future.value(true);
                           ConfigManager.ADMIN_TOKEN = Future.value(token);
                           Fluro.navigateTo(context, "/admin");
@@ -100,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void login(String password, Function(String) onSuccess) async {
+  void _login(String password, Function(String) onSuccess) async {
     ScaffoldMessengerState scaffold = ScaffoldMessenger.of(context);
     try {
       Map<String, dynamic> resp = await LoginModule.login(password: password);

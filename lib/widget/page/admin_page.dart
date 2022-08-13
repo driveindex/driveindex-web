@@ -1,5 +1,4 @@
-import 'dart:html';
-
+import 'package:driveindex_web/module/admin_module.dart';
 import 'package:driveindex_web/util/config_manager.dart';
 import 'package:driveindex_web/util/fluro_router.dart';
 import 'package:driveindex_web/widget/ui/start_column.dart';
@@ -63,9 +62,16 @@ class _AdminScreenState extends State<AdminScreen> {
   @override
   void initState() {
     super.initState();
-    ConfigManager.HAS_LOGIN.then((value) {
-      if (!value) Fluro.navigateTo(context, "/login");
+    ConfigManager.HAS_LOGIN.then((value) async {
+      if (!value) _navigateToLogin();
+      // 若 token 失效则跳转登录页面
+      Map<String, dynamic> resp = await AdminModule.checkLogin();
+      if (resp["code"] != 200) _navigateToLogin();
     });
+  }
+
+  void _navigateToLogin() {
+    Fluro.navigateTo(context, "/login");
   }
 
   @override
@@ -83,7 +89,7 @@ class _AdminScreenState extends State<AdminScreen> {
       body: ConstrainedBox(
         constraints: const BoxConstraints.expand(),
         child: ResponsiveWrapper(
-          maxWidth: 800,
+          maxWidth: 700,
           minWidth: 480,
           child: SingleChildScrollView(
             child: Padding(

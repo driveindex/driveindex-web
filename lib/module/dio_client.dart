@@ -7,18 +7,18 @@ class DioClient {
   static const API_HOST = "http://localhost:11411";
 
   static Future<Response<Map<String, dynamic>>> post(String path, {
-    data, Map<String, dynamic>? queryParameters, Options? options
+    data, Map<String, dynamic>? parameters, Options? options
   }) {
     return _client.post<Map<String, dynamic>>(parsePath(path),
-        data: data, queryParameters: queryParameters, options: options
+        data: data, queryParameters: parameters, options: options
     );
   }
 
   static Future<Response<Map<String, dynamic>>> get(String path, {
-    Map<String, dynamic>? queryParameters, Options? options
+    Map<String, dynamic>? parameters, Options? options
   }) {
     return _client.get<Map<String, dynamic>>(parsePath(path),
-        queryParameters: queryParameters, options: options
+        queryParameters: parameters, options: options
     );
   }
 

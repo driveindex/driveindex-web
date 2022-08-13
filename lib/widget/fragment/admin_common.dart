@@ -23,7 +23,7 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
         ),
         Card(
           child: FutureBuilder(
-            future: AdminCommonModule.getAzureClient(),
+            future: AdminModule.getAzureClient(),
             builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> data) {
               return StartColumn(
                 children: _getAzureClientWidget(data.data?["data"]),
