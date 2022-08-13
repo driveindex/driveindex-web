@@ -1,7 +1,7 @@
 import 'package:driveindex_web/module/admin_module.dart';
 import 'package:driveindex_web/util/config_manager.dart';
 import 'package:driveindex_web/util/fluro_router.dart';
-import 'package:driveindex_web/widget/ui/start_column.dart';
+import 'package:driveindex_web/widget/ui/compose_row_column.dart';
 import 'package:flutter/material.dart';
 
 import 'package:driveindex_web/widget/fragment/admin_common.dart';
@@ -20,9 +20,7 @@ class AdminScreen extends StatefulWidget {
     _AdminFragmentData page = _page;
     return StartColumn(
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
+        TextBaselineRow(
           children: [
             Text(
               page.title,

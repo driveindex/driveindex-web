@@ -18,6 +18,48 @@ class AdminModule {
     )).data!;
   }
 
+  static Future<Map<String, dynamic>> saveAzureClient({
+    required String id, required String calledName,
+    required String clientId, required String clientSecret,
+  }) async {
+    return (await DioClient.post(
+      "/api/admin/azure_client/$id",
+      data: {
+        "client_id": clientId,
+        "client_secret": clientSecret,
+        "called_name": calledName,
+      },
+      options: await _adminHeader,
+    )).data!;
+  }
+
+  static Future<Map<String, dynamic>> deleteAzureClient(String id) async {
+    return (await DioClient.post(
+      "/api/admin/azure_client/delete/$id",
+      options: await _adminHeader,
+    )).data!;
+  }
+
+  static Future<Map<String, dynamic>> defaultAzureClient(String id) async {
+    return (await DioClient.post(
+      "/api/admin/azure_client/default/$id",
+      options: await _adminHeader,
+    )).data!;
+  }
+
+  static Future<Map<String, dynamic>> saveClientAccount({
+    required String id, required String parentClient,
+    required String calledName,
+  }) async {
+    return (await DioClient.post(
+      "/api/admin/azure_account/$parentClient/$id",
+      data: {
+        "called_name": calledName,
+      },
+      options: await _adminHeader,
+    )).data!;
+  }
+
   static Future<Map<String, dynamic>> changePassword(String old, String newPass, String repeat) async {
     return (await DioClient.post(
       "/api/admin/password",

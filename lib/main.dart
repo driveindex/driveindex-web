@@ -5,7 +5,6 @@ import 'package:driveindex_web/widget/page/login_page.dart';
 import 'package:driveindex_web/util/fluro_router.dart';
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
-import 'package:log4f/log4f.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
 void main() {
