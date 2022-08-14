@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:driveindex_web/module/admin_module.dart';
 import 'package:driveindex_web/util/fluro_router.dart';
+import 'package:driveindex_web/widget/dialog/account_dialog.dart';
 import 'package:driveindex_web/widget/dialog/client_dialog.dart';
 import 'package:driveindex_web/widget/dialog/confirm_dialog.dart';
+import 'package:driveindex_web/widget/dialog/drive_dialog.dart';
 import 'package:driveindex_web/widget/dialog/message_dialog.dart';
 import 'package:driveindex_web/widget/ui/compose_row_column.dart';
+import 'package:driveindex_web/widget/ui/loading_cover.dart';
 import 'package:flutter/material.dart';
 
 class AdminCommonFragment extends StatefulWidget {
@@ -26,7 +29,7 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
   @override
   void initState() {
     _controller.stream.listen(onData);
-    refresh();
+    _refresh();
     super.initState();
   }
 
@@ -66,15 +69,7 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
                     ),
                   ),
                 ),
-                Visibility(
-                  visible: loading,
-                  child: Container(
-                    color: const Color.fromARGB(150, 255, 255, 255),
-                    child: const Center(
-                      child: CircularProgressIndicator(value: null),
-                    ),
-                  ),
-                ),
+                LoadingCover(visible: loading),
               ],
             ),
           ),
@@ -83,22 +78,25 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
     );
   }
 
-  void refresh() async {
+  void _refresh() async {
     setState(() => loading = true);
-    _controller.add(await AdminModule.getAzureClient());
+    _controller.add(await AzureClientModule.getAzureClient());
   }
 
   void _createNewClient() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return ClientSaveDialog(callback: refresh);
+        return ClientSaveDialog(callback: () {
+          _refresh(); _pop();
+        });
       }
     );
   }
 
   static const double ICON_SIZE = 20;
-  static const EdgeInsets CHILD_PADDING = EdgeInsets.symmetric(horizontal: 14);
+  static const double SUBTITLE_SIZE = 12;
+  static const EdgeInsets CHILD_PADDING = EdgeInsets.symmetric(horizontal: 10);
 
   List<Widget> _getAzureClientWidget(List<dynamic>? client) {
     List<Widget> widgets = [];
@@ -117,11 +115,11 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
                   context: context,
                   message: "确定要将$title设为默认吗？",
                   onConfirm: () async {
-                    Map<String, dynamic> resp = await AdminModule.defaultAzureClient(value["id"]);
+                    Map<String, dynamic> resp = await AzureClientModule.defaultAzureClient(value["id"]);
                     if (resp["code"] != 200) {
                       MessageDialog.show(context: context, title: "失败！", message: "设置默认失败，${resp["message"]}");
                     } else {
-                      refresh(); _pop();
+                      _refresh(); _pop();
                     }
                   },
                 );
@@ -133,14 +131,20 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
             ),
             title: Row(
               children: [
-                TextBaselineRow(
+                StartColumn(
                   children: [
-                    Text(detail["called_name"]),
                     Text(
-                      "（应用 ID：${value["id"]}）",
+                      detail["called_name"],
+                      style: !detail["enable"] ? const TextStyle(
+                          decoration: TextDecoration.lineThrough,
+                          color: Colors.grey
+                      ) : null,
+                    ),
+                    Text(
+                      "应用 ID：${value["id"]}",
                       style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14
+                        fontSize: SUBTITLE_SIZE,
+                        color: Colors.grey,
                       ),
                     ),
                   ],
@@ -154,7 +158,10 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
                         calledName: detail["called_name"],
                         clientId: detail["client_id"],
                         clientSecret: detail["client_secret"],
-                        callback: refresh,
+                        enabled: detail["enable"],
+                        callback: () {
+                          _refresh(); _pop();
+                        },
                       );
                     });
                   },
@@ -163,7 +170,14 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
                 ),
                 IconButton(
                   onPressed: () {
-
+                    showDialog(context: context, builder: (BuildContext context) {
+                      return AccountSaveDialog(
+                        callback: () {
+                          _refresh(); _pop();
+                        },
+                        parentClient: value["id"],
+                      );
+                    });
                   },
                   iconSize: ICON_SIZE,
                   icon: const Icon(Icons.add),
@@ -175,11 +189,11 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
                       title: "确认删除？",
                       message: "确定删除$title吗？",
                       onConfirm: () async {
-                        Map<String, dynamic> resp = await AdminModule.deleteAzureClient(value["id"]);
+                        Map<String, dynamic> resp = await AzureClientModule.deleteAzureClient(value["id"]);
                         if (resp["code"] != 200) {
                           MessageDialog.show(context: context, title: "失败！", message: "删除失败，${resp["message"]}");
                         } else {
-                          refresh(); _pop();
+                          _refresh(); _pop();
                         }
                       },
                     );
@@ -202,37 +216,118 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
     if (accounts != null) {
       for (Map<String, dynamic> value in accounts) {
         Map<String, dynamic> detail = value["detail"];
+        String title = "应用 “${detail["called_name"]}”（应用 ID：${value["id"]}）";
         widgets.add(
           ExpansionTile(
             childrenPadding: CHILD_PADDING,
-            title: TextBaselineRow(
+            leading: IconButton(
+              onPressed: () {
+                if (value["is_default"]) return;
+                ConfirmDialog.show(
+                  context: context,
+                  message: "确定要将$title设为默认吗？",
+                  onConfirm: () async {
+                    Map<String, dynamic> resp = await AzureAccountModule.defaultAzureAccount(
+                      id: value["id"], parentClient: aClient
+                    );
+                    if (resp["code"] != 200) {
+                      MessageDialog.show(context: context, title: "失败！", message: "设置默认失败，${resp["message"]}");
+                    } else {
+                      _refresh(); _pop();
+                    }
+                  },
+                );
+              },
+              iconSize: ICON_SIZE,
+              icon: value["is_default"]
+                  ? const Icon(Icons.star)
+                  : const Icon(Icons.star_border),
+            ),
+            title: Row(
               children: [
-                Text(detail["called_name"]),
-                Text(
-                  "（账号 ID：${value["id"]}）",
-                  style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14
-                  ),
+                TextBaselineRow(
+                  children: [
+                    StartColumn(
+                      children: [
+                        Text(
+                          detail["called_name"],
+                          style: !detail["enable"] ? const TextStyle(
+                              decoration: TextDecoration.lineThrough,
+                              color: Colors.grey
+                          ) : null,
+                        ),
+                        Text(
+                          "账号 ID：${value["id"]}",
+                          style: const TextStyle(
+                            fontSize: SUBTITLE_SIZE,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
                 const Spacer(),
                 IconButton(
                   onPressed: () {
-
+                    showDialog(context: context, builder: (BuildContext context) {
+                      return AccountSaveDialog(
+                        callback: () {
+                          _refresh(); _pop();
+                        },
+                        id: value["id"],
+                        parentClient: aClient,
+                        enabled: detail["enable"],
+                        calledName: detail["called_name"],
+                      );
+                    });
                   },
                   iconSize: ICON_SIZE,
                   icon: const Icon(Icons.edit),
                 ),
                 IconButton(
                   onPressed: () {
-
+                    showDialog(context: context, builder: (BuildContext context) {
+                      if (detail["need_login"]) {
+                        return AccountLoginDialog(
+                          id: value["id"],
+                          aClient: aClient,
+                          calledName: detail["called_name"],
+                          callback: () {
+                            _refresh(); _pop();
+                          },
+                        );
+                      } else {
+                        return DriveSaveDialog(
+                          parentClient: aClient,
+                          parentAccount: value["id"],
+                          callback: () {
+                            _refresh(); _pop();
+                          },
+                        );
+                      }
+                    });
                   },
                   iconSize: ICON_SIZE,
-                  icon: const Icon(Icons.add),
+                  icon: Icon(detail["need_login"] ? Icons.login : Icons.add),
                 ),
                 IconButton(
                   onPressed: () {
-
+                    ConfirmDialog.show(
+                      context: context,
+                      title: "确认删除？",
+                      message: "确定删除$title吗？",
+                      onConfirm: () async {
+                        Map<String, dynamic> resp = await AzureAccountModule.deleteAzureAccount(
+                          id: value["id"], parentClient: aClient
+                        );
+                        if (resp["code"] != 200) {
+                          MessageDialog.show(context: context, title: "失败！", message: "删除失败，${resp["message"]}");
+                        } else {
+                          _refresh(); _pop();
+                        }
+                      },
+                    );
                   },
                   iconSize: ICON_SIZE,
                   icon: const Icon(Icons.delete),
@@ -251,34 +346,97 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
     List<Widget> widgets = [];
     for (Map<String, dynamic> value in drives) {
       Map<String, dynamic> detail = value["detail"];
+      String title = "配置 “${detail["called_name"]}”（配置 ID：${value["id"]}）";
       widgets.add(
-        TextBaselineRow(
-          children: [
-            Text(detail["called_name"]),
-            Text(
-              "（配置 ID：${value["id"]}）",
-              style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  if (value["is_default"]) return;
+                  ConfirmDialog.show(
+                    context: context,
+                    message: "确定要将$title设为默认吗？",
+                    onConfirm: () async {
+                      Map<String, dynamic> resp = await AzureAccountModule.defaultAzureAccount(
+                          id: value["id"], parentClient: aClient
+                      );
+                      if (resp["code"] != 200) {
+                        MessageDialog.show(context: context, title: "失败！", message: "设置默认失败，${resp["message"]}");
+                      } else {
+                        _refresh(); _pop();
+                      }
+                    },
+                  );
+                },
+                iconSize: ICON_SIZE,
+                icon: value["is_default"]
+                    ? const Icon(Icons.star)
+                    : const Icon(Icons.star_border),
               ),
-            ),
-            const Spacer(),
-            IconButton(
-              onPressed: () {
-
-              },
-              iconSize: ICON_SIZE,
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () {
-
-              },
-              iconSize: ICON_SIZE,
-              icon: const Icon(Icons.delete),
-            ),
-          ],
-        )
+              StartColumn(
+                children: [
+                  Text(
+                    detail["called_name"],
+                    style: !detail["enable"] ? const TextStyle(
+                        decoration: TextDecoration.lineThrough,
+                        color: Colors.grey
+                    ) : null,
+                  ),
+                  Text(
+                    "配置 ID：${value["id"]}",
+                    style: const TextStyle(
+                      fontSize: SUBTITLE_SIZE,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () {
+                  showDialog(context: context, builder: (BuildContext context) {
+                    return DriveSaveDialog(
+                      id: value["id"],
+                      parentClient: aClient,
+                      parentAccount: aAccount,
+                      calledName: detail["called_name"],
+                      dirHome: detail["dir_home"],
+                      enabled: detail["enable"],
+                      callback: () {
+                        _refresh(); _pop();
+                      },
+                    );
+                  });
+                },
+                iconSize: ICON_SIZE,
+                icon: const Icon(Icons.edit),
+              ),
+              IconButton(
+                onPressed: () {
+                  ConfirmDialog.show(
+                    context: context,
+                    title: "确认删除？",
+                    message: "确定删除$title吗？",
+                    onConfirm: () async {
+                      Map<String, dynamic> resp = await DriveConfigModule.deleteDriveConfig(
+                        id: value["id"], parentClient: aClient, parentAccount: aAccount,
+                      );
+                      if (resp["code"] != 200) {
+                        MessageDialog.show(context: context, title: "失败！", message: "删除失败，${resp["message"]}");
+                      } else {
+                        _refresh(); _pop();
+                      }
+                    },
+                  );
+                },
+                iconSize: ICON_SIZE,
+                icon: const Icon(Icons.delete),
+              ),
+            ],
+          ),
+        ),
       );
     }
     return widgets;

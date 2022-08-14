@@ -122,7 +122,7 @@ class _AdminPasswordFragmentState extends State<AdminPasswordFragment> {
   void _setPassword(String old, String newPass, String repeat, Function onSuccess) async {
     ScaffoldMessengerState scaffold = ScaffoldMessenger.of(context);
     try {
-      Map<String, dynamic> resp = await AdminModule.changePassword(old, newPass, repeat);
+      Map<String, dynamic> resp = await AdminCommonModule.changePassword(old, newPass, repeat);
       if (resp["code"] == 200) {
         onSuccess();
         return;

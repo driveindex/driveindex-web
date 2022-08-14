@@ -4,22 +4,24 @@ import 'package:driveindex_web/widget/dialog/message_dialog.dart';
 import 'package:driveindex_web/widget/ui/compose_row_column.dart';
 import 'package:flutter/material.dart';
 
-class ClientSaveDialog extends StatefulWidget {
+class DriveSaveDialog extends StatefulWidget {
   final Function callback;
 
   final String id;
+  final String parentClient;
+  final String parentAccount;
   final String calledName;
-  final String clientId;
-  final String clientSecret;
+  final String dirHome;
   final bool enabled;
 
-  ClientSaveDialog({
+  DriveSaveDialog({
     Key? key,
     required this.callback,
     this.id = "",
+    required this.parentClient,
+    required this.parentAccount,
     this.calledName = "",
-    this.clientId = "",
-    this.clientSecret = "",
+    this.dirHome = "",
     this.enabled = true,
   }) : super(key: key);
 
@@ -32,39 +34,31 @@ class ClientSaveDialog extends StatefulWidget {
   final TextEditingController _calledNameController = TextEditingController();
   String get _calledNameValue => _calledNameController.value.text;
 
-  final TextEditingController _clientIdController = TextEditingController();
-  String get _clientIdValue => _clientIdController.value.text;
-
-  final TextEditingController _clientSecretController = TextEditingController();
-  String get _clientSecretValue => _clientSecretController.value.text;
+  final TextEditingController _dirHomeController = TextEditingController();
+  String get _dirHomeValue => _dirHomeController.value.text;
 
   @override
-  State<StatefulWidget> createState() => _ClientCreationState();
+  State<StatefulWidget> createState() => _DriveCreationState();
 }
 
-class _ClientCreationState extends State<ClientSaveDialog> {
+class _DriveCreationState extends State<DriveSaveDialog> {
   @override
   void initState() {
     widget._idController.text = widget.id;
     widget._calledNameController.text = widget.calledName;
-    widget._clientIdController.text = widget.clientId;
-    widget._clientSecretController.text = widget.clientSecret;
+    widget._dirHomeController.text = widget.dirHome;
     _enabled = widget.enabled;
     super.initState();
   }
 
   static const double DEVIDE_SIZE = 30;
 
-  bool _clientSecretVisible = false;
   bool _enabled = true;
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Center(
-        child: widget.id.isEmpty
-            ? const Text("添加新的 Azure 应用程序")
-            : const Text("编辑 Azure 应用程序"),
+      title: const Center(
+        child: Text("添加账号"),
       ),
       content: Container(
         constraints: const BoxConstraints(
@@ -80,7 +74,7 @@ class _ClientCreationState extends State<ClientSaveDialog> {
                 enabled: widget.id.isEmpty,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: "请输入 ID（用于标识该 Azure 应用程序）",
+                  labelText: "请输入 ID（用于标识该配置）",
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -107,43 +101,14 @@ class _ClientCreationState extends State<ClientSaveDialog> {
               ),
               const SizedBox(height: DEVIDE_SIZE),
               TextFormField(
-                controller: widget._clientIdController,
+                controller: widget._dirHomeController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: "请输入 Azure 应用程序 ID（Client ID）",
+                  labelText: "请输入起始目录",
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Client ID 为空！";
-                  }
-                  RegExp reg = RegExp(r'[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}');
-                  if (reg.hasMatch(value)) return null;
-                  return "请检查您输入的 Client ID！";
-                },
-              ),
-              const SizedBox(height: DEVIDE_SIZE),
-              TextFormField(
-                controller: widget._clientSecretController,
-                obscureText: !_clientSecretVisible,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  labelText: "请输入 Azure 应用程序机密（Client Secret）",
-                  suffixIcon: IconButton(
-                    icon: Icon(_clientSecretVisible ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () {
-                      setState(() {
-                        if (widget.clientSecret == "placeholder") {
-                          _clientSecretVisible = false;
-                        } else {
-                          _clientSecretVisible = !_clientSecretVisible;
-                        }
-                      });
-                    },
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Client Secret 为空！";
+                    return "起始目录为空！若不做目录限制则无需添加配置。";
                   }
                   return null;
                 },
@@ -175,11 +140,12 @@ class _ClientCreationState extends State<ClientSaveDialog> {
             if (!widget._validate) {
               return;
             }
-            Map<String, dynamic> resp = (await AzureClientModule.saveAzureClient(
+            Map<String, dynamic> resp = (await DriveConfigModule.saveDriveConfig(
               id: widget._idValue,
+              parentClient: widget.parentClient,
+              parentAccount: widget.parentAccount,
               calledName: widget._calledNameValue,
-              clientId: widget._clientIdValue,
-              clientSecret: widget._clientSecretValue,
+              dirHome: widget._dirHomeValue,
               enabled: _enabled,
             ));
             if (resp["code"] == 200) {

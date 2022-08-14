@@ -63,7 +63,7 @@ class _AdminScreenState extends State<AdminScreen> {
     ConfigManager.HAS_LOGIN.then((value) async {
       if (!value) _navigateToLogin();
       // 若 token 失效则跳转登录页面
-      Map<String, dynamic> resp = await AdminModule.checkLogin();
+      Map<String, dynamic> resp = await AdminCommonModule.checkLogin();
       if (resp["code"] != 200) _navigateToLogin();
     });
   }
