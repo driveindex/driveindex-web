@@ -77,7 +77,7 @@ class _AdminScreenState extends State<AdminScreen> {
     _DrawerList drawerList = _DrawerList(index: widget.index);
     return Scaffold(
       appBar: AppBar(
-        title: GestureDetector(
+        title: InkWell(
           child: const Text("DriveIndex"),
           onTap: () {
             Fluro.navigateTo(context, "/");

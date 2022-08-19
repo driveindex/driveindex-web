@@ -93,7 +93,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 80, height: 40,
                         child: Center(
                           child: Text(
-                              "登录", style: TextStyle(fontSize: 16)
+                            "登录",
+                            style: TextStyle(fontSize: 16),
                           ),
                         ),
                       ),

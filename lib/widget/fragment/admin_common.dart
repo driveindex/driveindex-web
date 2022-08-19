@@ -19,12 +19,10 @@ class AdminCommonFragment extends StatefulWidget {
 }
 
 class _AdminCommonFragmentState extends State<AdminCommonFragment> {
-  int refreshFlag = 0;
-
   final StreamController<Map<String, dynamic>> _controller = StreamController();
 
-  bool loading = false;
-  Map<String, dynamic>? data;
+  bool _loading = false;
+  Map<String, dynamic>? _data;
 
   @override
   void initState() {
@@ -35,8 +33,8 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
 
   void onData(Map<String, dynamic> data) {
     setState(() {
-      loading = false;
-      this.data = data;
+      _loading = false;
+      _data = data;
     });
   }
 
@@ -57,7 +55,7 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
             child: Stack(
               children: [
                 StartColumn(
-                  children: _getAzureClientWidget(data?["data"]),
+                  children: _getAzureClientWidget(_data?["data"]),
                 ),
                 Align(
                   alignment: Alignment.bottomRight,
@@ -69,7 +67,7 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
                     ),
                   ),
                 ),
-                LoadingCover(visible: loading),
+                LoadingCover(visible: _loading),
               ],
             ),
           ),
@@ -79,7 +77,7 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
   }
 
   void _refresh() async {
-    setState(() => loading = true);
+    setState(() => _loading = true);
     _controller.add(await AzureClientModule.getAzureClient());
   }
 
@@ -101,7 +99,7 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
   List<Widget> _getAzureClientWidget(List<dynamic>? client) {
     List<Widget> widgets = [];
     if (client != null) {
-      setState(() => loading = false);
+      setState(() => _loading = false);
       for (Map<String, dynamic> value in client) {
         Map<String, dynamic> detail = value["detail"];
         String title = "应用 “${detail["called_name"]}”（应用 ID：${value["id"]}）";
@@ -157,7 +155,6 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
                         id: value["id"],
                         calledName: detail["called_name"],
                         clientId: detail["client_id"],
-                        clientSecret: detail["client_secret"],
                         enabled: detail["enable"],
                         callback: () {
                           _refresh(); _pop();

@@ -10,7 +10,6 @@ class ClientSaveDialog extends StatefulWidget {
   final String id;
   final String calledName;
   final String clientId;
-  final String clientSecret;
   final bool enabled;
 
   ClientSaveDialog({
@@ -19,7 +18,6 @@ class ClientSaveDialog extends StatefulWidget {
     this.id = "",
     this.calledName = "",
     this.clientId = "",
-    this.clientSecret = "",
     this.enabled = true,
   }) : super(key: key);
 
@@ -35,9 +33,6 @@ class ClientSaveDialog extends StatefulWidget {
   final TextEditingController _clientIdController = TextEditingController();
   String get _clientIdValue => _clientIdController.value.text;
 
-  final TextEditingController _clientSecretController = TextEditingController();
-  String get _clientSecretValue => _clientSecretController.value.text;
-
   @override
   State<StatefulWidget> createState() => _ClientCreationState();
 }
@@ -48,14 +43,12 @@ class _ClientCreationState extends State<ClientSaveDialog> {
     widget._idController.text = widget.id;
     widget._calledNameController.text = widget.calledName;
     widget._clientIdController.text = widget.clientId;
-    widget._clientSecretController.text = widget.clientSecret;
     _enabled = widget.enabled;
     super.initState();
   }
 
   static const double DEVIDE_SIZE = 30;
 
-  bool _clientSecretVisible = false;
   bool _enabled = true;
 
   @override
@@ -122,33 +115,6 @@ class _ClientCreationState extends State<ClientSaveDialog> {
                 },
               ),
               const SizedBox(height: DEVIDE_SIZE),
-              TextFormField(
-                controller: widget._clientSecretController,
-                obscureText: !_clientSecretVisible,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  labelText: "请输入 Azure 应用程序机密（Client Secret）",
-                  suffixIcon: IconButton(
-                    icon: Icon(_clientSecretVisible ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () {
-                      setState(() {
-                        if (widget.clientSecret == "placeholder") {
-                          _clientSecretVisible = false;
-                        } else {
-                          _clientSecretVisible = !_clientSecretVisible;
-                        }
-                      });
-                    },
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Client Secret 为空！";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: DEVIDE_SIZE),
               Row(
                 children: [
                   Text(_enabled ? "启用" : "禁用"),
@@ -179,7 +145,6 @@ class _ClientCreationState extends State<ClientSaveDialog> {
               id: widget._idValue,
               calledName: widget._calledNameValue,
               clientId: widget._clientIdValue,
-              clientSecret: widget._clientSecretValue,
               enabled: _enabled,
             ));
             if (resp["code"] == 200) {

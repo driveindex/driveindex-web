@@ -1,16 +1,15 @@
+import 'dart:async';
+
+import 'package:driveindex_web/widget/ui/loading_cover.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
-typedef AzureContentResolver = Function(void Function(String) callback);
-
 class MarkdownWidget extends StatefulWidget {
-  final bool show;
-  final AzureContentResolver resolver;
+  final Future<String?> content;
 
   const MarkdownWidget({
     Key? key,
-    required this.show,
-    required this.resolver,
+    required this.content,
   }) : super(key: key);
 
   @override
@@ -21,30 +20,34 @@ class _MarkdownWidgetState extends State<MarkdownWidget> {
   String? _content;
 
   @override
-  Widget build(BuildContext context) {
-    return Visibility(
-      visible: widget.show,
-      child: Card(
-        child: _loadContent(),
-      ),
-    );
+  void initState() {
+    widget.content.then((value) {
+      setState(() => _content = value);
+    });
+    super.initState();
   }
 
   @override
-  void initState() {
-    super.initState();
-    widget.resolver((content) {
-      setState(() {
-        _content = content;
-      });
-    });
+  Widget build(BuildContext context) {
+    return _loadContent();
   }
 
   Widget _loadContent() {
     if (_content == null) {
-      return RefreshProgressIndicator();
+      return const LoadingCover();
     } else {
-      return MarkdownBody(data: _content!);
+      return Container(
+        constraints: const BoxConstraints(
+          minHeight: 200,
+          minWidth: double.infinity,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              vertical: 12, horizontal: 20
+          ),
+          child: MarkdownBody(data: _content!),
+        ),
+      );
     }
   }
 }

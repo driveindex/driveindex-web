@@ -39,9 +39,9 @@ dependencies:
   shared_preferences: ^2.0.15
   responsive_framework: ^0.2.0
   dio: ^4.0.6
-  configurable_expansion_tile_null_safety: ^2.0.3
   url_launcher: ^6.1.5
   marquee: ^2.2.3
+  flutter_breadcrumb: ^1.0.1
 
 
   # The following adds the Cupertino Icons font to your application.

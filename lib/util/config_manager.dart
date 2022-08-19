@@ -3,6 +3,8 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ConfigManager {
+  ConfigManager._();
+
   static final Future<SharedPreferences> _config = SharedPreferences.getInstance();
 
   static const _HAS_LOGIN = "has_login";

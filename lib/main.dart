@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
 void main() {
+  Fluro.notFoundHandler = Handler(handlerFunc: NotFoundScreen.handler);
   Fluro.define("/admin", handler: Handler(handlerFunc: AdminScreen.handler));
   Fluro.define("/login", handler: Handler(handlerFunc: LoginScreen.handler));
-  Fluro.define("/", handler: Handler(handlerFunc: DirScreen.handler));
-  Fluro.notFoundHandler = Handler(handlerFunc: NotFoundScreen.handler);
+  Fluro.define("/index", handler: Handler(handlerFunc: DirScreen.handler));
   runApp(const DriveIndexApp());
 }
 
@@ -40,6 +40,7 @@ class DriveIndexApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       onGenerateRoute: Fluro.generator,
+      initialRoute: "/index",
     );
   }
 }

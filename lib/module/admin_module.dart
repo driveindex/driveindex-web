@@ -35,14 +35,12 @@ class AzureClientModule {
 
   static Future<Map<String, dynamic>> saveAzureClient({
     required String id, required String calledName,
-    required String clientId, required String clientSecret,
-    required bool enabled,
+    required String clientId, required bool enabled,
   }) async {
     return (await DioClient.post(
       "/api/admin/azure_client/$id",
       data: {
         "client_id": clientId,
-        "client_secret": clientSecret,
         "called_name": calledName,
         "enable": enabled,
       },

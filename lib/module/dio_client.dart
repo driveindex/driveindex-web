@@ -10,7 +10,9 @@ class DioClient {
     data, Map<String, dynamic>? parameters, Options? options
   }) {
     return _client.post<Map<String, dynamic>>(parsePath(path),
-        data: data, queryParameters: parameters, options: options
+      data: data,
+      queryParameters: parameters,
+      options: options,
     );
   }
 
@@ -18,7 +20,17 @@ class DioClient {
     Map<String, dynamic>? parameters, Options? options
   }) {
     return _client.get<Map<String, dynamic>>(parsePath(path),
-        queryParameters: parameters, options: options
+      queryParameters: parameters,
+      options: options,
+    );
+  }
+
+  static Future<Response<String>> getContent(String path, {
+    Map<String, dynamic>? parameters, Options? options
+  }) {
+    return _client.request<String>(parsePath(path),
+      queryParameters: parameters,
+      options: options,
     );
   }
 
