@@ -356,8 +356,8 @@ class _AdminCommonFragmentState extends State<AdminCommonFragment> {
                     context: context,
                     message: "确定要将$title设为默认吗？",
                     onConfirm: () async {
-                      Map<String, dynamic> resp = await AzureAccountModule.defaultAzureAccount(
-                          id: value["id"], parentClient: aClient
+                      Map<String, dynamic> resp = await DriveConfigModule.defaultDriveConfig(
+                          id: value["id"], parentClient: aClient, parentAccount: aAccount
                       );
                       if (resp["code"] != 200) {
                         MessageDialog.show(context: context, title: "失败！", message: "设置默认失败，${resp["message"]}");

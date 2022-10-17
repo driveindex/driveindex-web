@@ -36,19 +36,22 @@ class BreadcrumbsWidget extends StatelessWidget {
 
   BreadCrumbItem _createSingleItem(String title, CanonicalPath path) {
     return BreadCrumbItem(
-      content: Card(
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(20))
-        ),
-        child: InkWell(
-          child: Container(
-            constraints: const BoxConstraints(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-              child: Text(title),
-            ),
+      content: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Card(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20))
           ),
-          onTap: () => onNavigate(path),
+          child: InkWell(
+            child: Container(
+              constraints: const BoxConstraints(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                child: Text(title),
+              ),
+            ),
+            onTap: () => onNavigate(path),
+          ),
         ),
       ),
     );

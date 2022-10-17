@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:driveindex_web/module/file_module.dart';
 import 'package:driveindex_web/util/canonical_path.dart';
@@ -6,6 +7,7 @@ import 'package:driveindex_web/util/fluro_router.dart';
 import 'package:driveindex_web/util/runtime_value.dart';
 import 'package:driveindex_web/widget/fragment/dir_file.dart';
 import 'package:driveindex_web/widget/fragment/dir_list.dart';
+import 'package:driveindex_web/widget/fragment/dir_password.dart';
 import 'package:driveindex_web/widget/page/not_found_page.dart';
 import 'package:driveindex_web/widget/ui/breadcrumbs_widget.dart';
 import 'package:driveindex_web/widget/ui/compose_row_column.dart';
@@ -23,6 +25,8 @@ class DirScreen extends StatefulWidget {
       drive: params["drive"]?[0],
       page: int.tryParse(params["page"]?[0] ?? "null"),
       size: int.tryParse(params["size"]?[0] ?? "null"),
+      sortBy: params["sort_by"]?[0],
+      asc: params["asc"]?[0].contains("true"),
     );
   };
 
@@ -32,6 +36,8 @@ class DirScreen extends StatefulWidget {
   final String? drive;
   final int? page;
   final int? size;
+  final String? sortBy;
+  final bool? asc;
 
   const DirScreen({
     Key? key,
@@ -41,6 +47,8 @@ class DirScreen extends StatefulWidget {
     this.drive,
     this.page,
     this.size,
+    this.sortBy,
+    this.asc,
   }): super(key: key);
 
   @override
@@ -55,22 +63,29 @@ class _DirScreenState extends State<DirScreen> {
 
   @override
   void initState() {
+    super.initState();
     _controller.stream.listen(onData);
     _getData();
-    super.initState();
   }
+
+  static Set<int> code = {200, -4001};
 
   void onData(Map<String, dynamic>? data) {
     setState(() {
       _loading = false;
       _data = data;
+      if (!code.contains(_data!["code"])) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("文件处理失败：${_data!["message"]}"))
+        );
+      }
     });
   }
 
   void _getData() async {
     _controller.add(await FileModule.getFile(widget.client, widget.account,
         widget.drive, widget.path.getPath(), RuntimeValue.FILE_PASSWORD,
-        widget.page, widget.size));
+        widget.size, widget.page, widget.sortBy, widget.asc));
   }
 
   @override
@@ -82,7 +97,6 @@ class _DirScreenState extends State<DirScreen> {
           padding: const EdgeInsets.symmetric(vertical: 30),
           child: ResponsiveWrapper(
             maxWidth: 800,
-            minWidth: 480,
             child: CardColumn(
               shadowColor: Theme.of(context).primaryColorLight,
               children: [
@@ -111,10 +125,15 @@ class _DirScreenState extends State<DirScreen> {
     if (code == -401) {
       return [const NotFoundScreen()];
     }
+    if (code == -4001) {
+      return [DirPasswordScreen(onSubmit: () {
+        setState(() {
+          _loading = true;
+          _getData();
+        });
+      })];
+    }
     if (code != 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("文件处理失败：${_data!["message"]}"))
-      );
       return [];
     }
     Map<String, dynamic> data = _data!["data"];
@@ -137,10 +156,12 @@ class _DirScreenState extends State<DirScreen> {
         DirList(
           totalPage: data["total_page"],
           totalCount: data["total_count"],
+          currentPage: widget.page ?? 0,
           list: list,
           currentPath: widget.path,
           onPush: (String item) => _redirect(widget.path + item),
           onPop: () => _redirect(widget.path.getParentPath()),
+          onJumpTo: (int pageIndex) {  },
         ),
         if (list.containsKey("readme.md"))
           ...[
@@ -163,8 +184,11 @@ class _DirScreenState extends State<DirScreen> {
           child: DirFile(
             data: _data!["data"],
             urlResolver: () {
-              Map<String, dynamic> data = FileModule.getParameters(widget.client,
-                  widget.account, widget.drive, widget.path.getUrlEncodedPath(), null);
+              Map<String, dynamic> data = FileModule.getParameters(
+                  widget.client, widget.account, widget.drive,
+                  widget.path.getUrlEncodedPath(),
+                  RuntimeValue.FILE_PASSWORD
+              );
               return Fluro.parseData("/download", data);
             },
           ),
@@ -173,11 +197,11 @@ class _DirScreenState extends State<DirScreen> {
     ];
   }
 
-  void _redirect(CanonicalPath path) {
+  void _redirect(CanonicalPath path, { int? page, int? size }) {
     Map<String, dynamic> data = FileModule.getParameters(widget.client,
         widget.account, widget.drive, path.getUrlEncodedPath(), null);
-    if (widget.page != null) data["page"] = widget.page;
-    if (widget.size != null) data["size"] = widget.size;
+    if (page != null || widget.page != null) data["page"] = page ?? widget.page;
+    if (size != null || widget.size != null) data["size"] = size ?? widget.size;
     Fluro.navigateTo(context, "/index", data: data);
   }
 }

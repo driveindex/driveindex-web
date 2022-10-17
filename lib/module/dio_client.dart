@@ -34,9 +34,9 @@ class DioClient {
   }
 
   static String parsePath(String path) {
-    // if (!path.startsWith("http")) {
-    //   path = "$API_HOST$path";
-    // }
+    if (!const bool.fromEnvironment("dart.vm.product")) {
+      path = "$API_HOST$path";
+    }
     return path;
   }
 }

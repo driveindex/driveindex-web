@@ -42,6 +42,7 @@ dependencies:
   url_launcher: ^6.1.5
   marquee: ^2.2.3
   flutter_breadcrumb: ^1.0.1
+  crypto: ^3.0.2
 
 
   # The following adds the Cupertino Icons font to your application.

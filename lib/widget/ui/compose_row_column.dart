@@ -63,19 +63,33 @@ class TextBaselineRow extends Row {
   );
 }
 
+List<Widget> _mapCardChild(List<Widget?> children, double elevation,
+    Color? shadowColor) {
+  List<Widget> result = [];
+  for (Widget? value in children) {
+    if (value == null) continue;
+    result.add(Card(
+      elevation: elevation,
+      shadowColor: shadowColor,
+      child: value,
+    ));
+  }
+  return result;
+}
+
 class CardColumn extends Column {
   CardColumn({
     Key? key,
     double elevation = 50,
     Color? shadowColor,
     MainAxisAlignment mainAxisAlignment = MainAxisAlignment.center,
-    MainAxisSize mainAxisSize = MainAxisSize.max,
+    MainAxisSize mainAxisSize = MainAxisSize.min,
     TextDirection? textDirection,
     VerticalDirection verticalDirection = VerticalDirection.down,
     TextBaseline? textBaseline,
     List<Widget?> children = const <Widget?>[],
   }) : super(
-    children: map(children, elevation, shadowColor),
+    children: _mapCardChild(children, elevation, shadowColor),
     key: key,
     mainAxisAlignment: mainAxisAlignment,
     mainAxisSize: mainAxisSize,
@@ -84,18 +98,27 @@ class CardColumn extends Column {
     verticalDirection: verticalDirection,
     textBaseline: textBaseline,
   );
+}
 
-  static List<Widget> map(List<Widget?> children, double elevation,
-      Color? shadowColor) {
-    List<Widget> result = [];
-    for (Widget? value in children) {
-      if (value == null) continue;
-      result.add(Card(
-        elevation: elevation,
-        shadowColor: shadowColor,
-        child: value,
-      ));
-    }
-    return result;
-  }
+class CardRow extends Row {
+  CardRow({
+    Key? key,
+    double elevation = 50,
+    Color? shadowColor,
+    MainAxisAlignment mainAxisAlignment = MainAxisAlignment.center,
+    MainAxisSize mainAxisSize = MainAxisSize.min,
+    TextDirection? textDirection,
+    VerticalDirection verticalDirection = VerticalDirection.down,
+    TextBaseline? textBaseline,
+    List<Widget?> children = const <Widget?>[],
+  }) : super(
+    children: _mapCardChild(children, elevation, shadowColor),
+    key: key,
+    mainAxisAlignment: mainAxisAlignment,
+    mainAxisSize: mainAxisSize,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    textDirection: textDirection,
+    verticalDirection: verticalDirection,
+    textBaseline: textBaseline,
+  );
 }

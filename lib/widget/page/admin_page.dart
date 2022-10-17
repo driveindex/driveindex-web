@@ -80,7 +80,7 @@ class _AdminScreenState extends State<AdminScreen> {
         title: InkWell(
           child: const Text("DriveIndex"),
           onTap: () {
-            Fluro.navigateTo(context, "/");
+            Fluro.navigateTo(context, "/index");
           },
         ),
       ),

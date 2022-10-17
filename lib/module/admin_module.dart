@@ -136,8 +136,8 @@ class DriveConfigModule {
   }
 
   static Future<Map<String, dynamic>> deleteDriveConfig({
-    required String id,
-    required String parentClient, required String parentAccount,
+    required String id, required String parentClient,
+    required String parentAccount,
   }) async {
     return (await DioClient.post(
       "/api/admin/drive_config/delete/$parentClient/$parentAccount/$id",
@@ -146,8 +146,8 @@ class DriveConfigModule {
   }
 
   static Future<Map<String, dynamic>> defaultDriveConfig({
-    required String id,
-    required String parentClient, required String parentAccount,
+    required String id, required String parentClient,
+    required String parentAccount,
   }) async {
     return (await DioClient.post(
       "/api/admin/drive_config/default/$parentClient/$parentAccount/$id",
