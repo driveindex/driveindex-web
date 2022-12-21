@@ -1,3 +1,5 @@
+import 'package:driveindex_web/module/dio_client.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:universal_html/html.dart' as html;
 
 import 'package:driveindex_web/module/file_module.dart';
@@ -27,23 +29,33 @@ class DirFile extends StatelessWidget {
             const SizedBox(width: 10),
             Text(
               data["name"],
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18
               ),
             ),
             const Spacer(),
-            TextButton(
-              child: const SizedBox(
-                height: 40,
-                child: Center(
-                  child: Text("复制下载链接"),
+            Visibility(
+              visible: ResponsiveWrapper.of(context).isLargerThan(MOBILE),
+              child: TextButton(
+                child: const SizedBox(
+                  height: 40,
+                  child: Center(
+                    child: Text("复制下载链接"),
+                  ),
                 ),
+                onPressed: () {
+                  String basePath = urlResolver();
+                  if (!const bool.fromEnvironment("dart.vm.product")) {
+                    basePath = "${DioClient.API_HOST}$basePath";
+                  } else {
+                    basePath = "${html.window.location.host}$basePath";
+                  }
+                  Clipboard.setData(ClipboardData(text: basePath));
+                },
               ),
-              onPressed: () {
-                String url = "${html.window.location.host}${urlResolver()}";
-                Clipboard.setData(ClipboardData(text: url));
-              },
             ),
             const SizedBox(width: 20),
             ElevatedButton(
@@ -56,8 +68,12 @@ class DirFile extends StatelessWidget {
                 ),
               ),
               onPressed: () {
+                String basePath = urlResolver();
+                if (!const bool.fromEnvironment("dart.vm.product")) {
+                  basePath = "${DioClient.API_HOST}$basePath";
+                }
                 launchUrl(
-                  Uri.parse(urlResolver()),
+                  Uri.parse(basePath),
                   mode: LaunchMode.externalApplication,
                 );
               },

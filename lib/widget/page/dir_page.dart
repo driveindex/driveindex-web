@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'dart:collection';
 
+import 'package:driveindex_web/main.dart';
 import 'package:driveindex_web/module/file_module.dart';
 import 'package:driveindex_web/util/canonical_path.dart';
 import 'package:driveindex_web/util/fluro_router.dart';
+import 'package:driveindex_web/util/logger.dart';
 import 'package:driveindex_web/util/runtime_value.dart';
 import 'package:driveindex_web/widget/fragment/dir_file.dart';
 import 'package:driveindex_web/widget/fragment/dir_list.dart';
@@ -14,7 +15,7 @@ import 'package:driveindex_web/widget/ui/compose_row_column.dart';
 import 'package:driveindex_web/widget/ui/loading_cover.dart';
 import 'package:driveindex_web/widget/ui/markdown_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:responsive_framework/responsive_wrapper.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class DirScreen extends StatefulWidget {
   static get handler => (BuildContext? _, Map<String, List<String>> params) {
@@ -97,6 +98,7 @@ class _DirScreenState extends State<DirScreen> {
           padding: const EdgeInsets.symmetric(vertical: 30),
           child: ResponsiveWrapper(
             maxWidth: 800,
+            breakpoints: DriveIndexApp.Breakpoint,
             child: CardColumn(
               shadowColor: Theme.of(context).primaryColorLight,
               children: [
@@ -136,6 +138,9 @@ class _DirScreenState extends State<DirScreen> {
     if (code != 200) {
       return [];
     }
+
+    Log.info("ResponsiveWrapper.of(context): ${ResponsiveWrapper.of(context)}");
+
     Map<String, dynamic> data = _data!["data"];
     if (data["mine_type"] == "directory") {
       List<dynamic> content = data["content"];

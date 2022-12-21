@@ -5,6 +5,7 @@ import 'package:driveindex_web/util/timestamp_wrapper.dart';
 import 'package:driveindex_web/widget/ui/compose_row_column.dart';
 import 'package:driveindex_web/widget/ui/page_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 typedef ContentResolver = Future<String?> Function(String item);
 
@@ -36,7 +37,7 @@ class DirList extends StatelessWidget {
       children: [
         CardColumn(
           elevation: 1,
-          children: _buildList(),
+          children: _buildList(context),
         ),
         const SizedBox(height: 20),
         PageIndicator(
@@ -50,19 +51,19 @@ class DirList extends StatelessWidget {
   }
 
   static const Widget LIST_DEVIDER = SizedBox(height: 5, width: 5);
-  List<Widget> _buildList() {
+  List<Widget> _buildList(BuildContext context) {
     List<Widget> widgets = [];
     if (currentPath.getPath() != CanonicalPath.ROOT_PATH) {
-      widgets.add(_createSingleItem(null));
+      widgets.add(_createSingleItem(context, null));
     }
     List<dynamic> list = this.list.values.toList();
     for (Map<String, dynamic> value in list) {
-      widgets.add(_createSingleItem(value));
+      widgets.add(_createSingleItem(context, value));
     }
     return widgets;
   }
 
-  Widget _createSingleItem(Map<String, dynamic>? value) {
+  Widget _createSingleItem(BuildContext context, Map<String, dynamic>? value) {
     return InkWell(
       child: SizedBox(
         height: 50,
@@ -74,7 +75,17 @@ class DirList extends StatelessWidget {
               LIST_DEVIDER,
               TextBaselineRow(
                 children: _createItemTitle(value),
-              )
+              ),
+              const Flexible(
+                fit: FlexFit.tight,
+                child: SizedBox(),
+              ),
+              Visibility(
+                visible: ResponsiveWrapper.of(context).isLargerThan(MOBILE),
+                child: TextBaselineRow(
+                  children: _createItemInfo(value),
+                ),
+              ),
             ],
           ),
         ),
@@ -93,14 +104,20 @@ class DirList extends StatelessWidget {
     }
     return [
       Text(value["name"]),
-      // SizedBox(
-      //   width: 150,
-      //   child: Text(TimestampWrapper.of(value["info"]["modified_time"])),
-      // ),
-      // SizedBox(
-      //   width: 80,
-      //   child: Text(SizeWrapper.of(value["info"]["size"])),
-      // ),
+    ];
+  }
+
+  List<Widget> _createItemInfo(Map<String, dynamic>? value) {
+    if (value == null) return [];
+    return [
+      SizedBox(
+        width: 150,
+        child: Text(TimestampWrapper.of(value["info"]["modified_time"])),
+      ),
+      SizedBox(
+        width: 80,
+        child: Text(SizeWrapper.of(value["info"]["size"])),
+      ),
     ];
   }
 }

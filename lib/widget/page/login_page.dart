@@ -3,7 +3,6 @@ import 'package:driveindex_web/module/login_module.dart';
 import 'package:driveindex_web/util/config_manager.dart';
 import 'package:driveindex_web/util/fluro_router.dart';
 import 'package:flutter/material.dart';
-import 'package:log4f/log4f.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -123,7 +122,6 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text("登录失败，${resp["message"]}")),
       );
     } on DioError catch (e) {
-      Log4f.d(tag: "login_page.dart", msg: e.message);
       scaffold.showSnackBar(
         SnackBar(content: Text("登录失败，${e.message}")),
       );
