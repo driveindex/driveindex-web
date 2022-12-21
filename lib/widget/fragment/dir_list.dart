@@ -15,9 +15,10 @@ class DirList extends StatelessWidget {
   final int totalPage;
   final int totalCount;
   final int currentPage;
+  final int? pageSize;
   final Function(String item)? onPush;
   final Function? onPop;
-  final Function(int pageIndex) onJumpTo;
+  final Function(int pageIndex, int pageSize) onJumpTo;
 
   const DirList({
     Key? key,
@@ -25,6 +26,7 @@ class DirList extends StatelessWidget {
     required this.totalCount,
     required this.currentPage,
     required this.currentPath,
+    this.pageSize,
     required this.list,
     required this.onJumpTo,
     this.onPush,
@@ -39,12 +41,15 @@ class DirList extends StatelessWidget {
           elevation: 1,
           children: _buildList(context),
         ),
-        const SizedBox(height: 20),
-        PageIndicator(
-          totalPage: totalPage,
-          totalCount: totalCount,
-          currentPage: currentPage,
-          onJumpTo: onJumpTo,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(30, 10, 30, 20),
+          child: PageIndicator(
+            totalPage: totalPage,
+            totalCount: totalCount,
+            currentPage: currentPage,
+            pageSize: pageSize ?? 20,
+            onJumpTo: onJumpTo,
+          ),
         ),
       ],
     );

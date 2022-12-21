@@ -32,7 +32,9 @@ class DriveIndexApp extends StatelessWidget {
 
   static List<ResponsiveBreakpoint> get Breakpoint {
     return [
+      const ResponsiveBreakpoint.resize(360, name: MOBILE),
       const ResponsiveBreakpoint.resize(480, name: MOBILE),
+      const ResponsiveBreakpoint.resize(600, name: TABLET),
       const ResponsiveBreakpoint.resize(800, name: TABLET),
       const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
     ];

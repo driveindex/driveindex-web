@@ -5,63 +5,138 @@ class PageIndicator extends StatelessWidget {
   final int totalPage;
   final int totalCount;
   final int currentPage;
-  final Function(int pageIndex) onJumpTo;
+  final int pageSize;
+  final Function(int pageIndex, int pageSize) onJumpTo;
 
-  PageIndicator({
+  const PageIndicator({
     Key? key,
     required this.totalPage,
     required this.totalCount,
     required this.currentPage,
+    required this.pageSize,
     required this.onJumpTo,
   }) : super(key: key);
 
-  final TextEditingController _jumpTo = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: CardRow(
-            children: [
-
-            ],
-          ),
-        ),
-        SizedBox(
-          width: 100,
-          child: TextField(
-            controller: _jumpTo,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: "跳转到...",
+        TextBaselineRow(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            const Text("每页"),
+            const SizedBox(width: 10),
+            DropdownButton(
+              value: pageSize,
+              items: const [
+                DropdownMenuItem(value: 20, child: Text("20")),
+                DropdownMenuItem(value: 50, child: Text("50")),
+                DropdownMenuItem(value: 100, child: Text("100")),
+              ],
+              onChanged: (value) {
+                if (value != null) onJumpTo(0, value);
+              },
             ),
-          ),
+            const SizedBox(width: 10),
+            Text("条记录，共 $totalCount 条"),
+          ],
         ),
-        const SizedBox(height: 50),
-        ElevatedButton(
-          onPressed: () {
-            int? jumpTo = int.tryParse(_jumpTo.value.text);
-            if (jumpTo == null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("请输入一个大于 0 的数字！"))
-              );
-              return;
-            }
-            onJumpTo(jumpTo);
-          },
-          child: const SizedBox(
-            width: 80, height: 40,
-            child: Center(
-              child: Text(
-                "提交",
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
+        Visibility(
+          visible: totalPage > 1,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: _createIndicator(context),
           ),
         ),
       ],
+    );
+  }
+
+  List<Widget> _createIndicator(BuildContext context) {
+    List<Widget> widgets = [];
+
+    if (currentPage > 0) {
+      widgets.add(InkWell(
+        child: const Icon(
+          Icons.keyboard_arrow_left,
+          size: 34,
+        ),
+        onTap: () => {
+          onJumpTo(currentPage - 1, pageSize)
+        },
+      ));
+    }
+
+    List<int> indexes = [];
+    widgets.add(_createIndicatorItem(context, 1));
+    indexes.add(1);
+
+    widgets.add(_createIndicatorItem(context, 2));
+    indexes.add(2);
+
+    if (currentPage - 1 > 3 && !indexes.contains(currentPage - 1)) {
+      widgets.add(const Text("..."));
+    }
+    if (currentPage > 0 && !indexes.contains(currentPage)) {
+      widgets.add(_createIndicatorItem(context, currentPage));
+      indexes.add(currentPage);
+    }
+    if (currentPage + 1 <= totalPage && !indexes.contains(currentPage + 1)) {
+      widgets.add(_createIndicatorItem(context, currentPage + 1));
+      indexes.add(currentPage + 1);
+    }
+    if (currentPage + 2 <= totalPage && !indexes.contains(currentPage + 2)) {
+      widgets.add(_createIndicatorItem(context, currentPage + 2));
+      indexes.add(currentPage + 2);
+    }
+    if (currentPage + 2 < totalPage - 2 && !indexes.contains(currentPage + 2)) {
+      widgets.add(const Text("..."));
+    }
+    if (!indexes.contains(totalPage - 1)) {
+      widgets.add(_createIndicatorItem(context, totalPage - 1));
+      indexes.add(totalPage - 1);
+    }
+    if (!indexes.contains(totalPage)) {
+      widgets.add(_createIndicatorItem(context, totalPage));
+      indexes.add(totalPage);
+    }
+
+    if (currentPage + 1 < totalPage) {
+      widgets.add(InkWell(
+        child: const Icon(
+          Icons.keyboard_arrow_right,
+          size: 34,
+        ),
+        onTap: () => {
+          onJumpTo(currentPage + 1, pageSize)
+        },
+      ));
+    }
+
+    return widgets;
+  }
+
+  Widget _createIndicatorItem(BuildContext context, int target) {
+    Color? indicator;
+    if (target == currentPage + 1) {
+      indicator = Theme.of(context).primaryColor;
+    }
+    return InkWell(
+      child: Container(
+        width: 34,
+        height: 34,
+        alignment: Alignment.center,
+        child: Text(
+          "$target",
+          style: TextStyle(
+            color: indicator,
+            fontSize: 18,
+          ),
+        ),
+      ),
+      onTap: () => {
+        onJumpTo(target - 1, pageSize)
+      },
     );
   }
 }

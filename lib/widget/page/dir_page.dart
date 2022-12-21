@@ -18,14 +18,20 @@ import 'package:flutter/material.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
 class DirScreen extends StatefulWidget {
+  static List<int> pageSizes = [ 20, 50, 100 ];
+
   static get handler => (BuildContext? _, Map<String, List<String>> params) {
+    int? size = int.tryParse(params["size"]?[0] ?? "null");
+    if (size != null && !pageSizes.contains(size)) {
+      size = null;
+    }
     return DirScreen(
       path: CanonicalPath.of(params["path"]?[0] ?? "/"),
       client: params["client"]?[0],
       account: params["account"]?[0],
       drive: params["drive"]?[0],
       page: int.tryParse(params["page"]?[0] ?? "null"),
-      size: int.tryParse(params["size"]?[0] ?? "null"),
+      size: size,
       sortBy: params["sort_by"]?[0],
       asc: params["asc"]?[0].contains("true"),
     );
@@ -139,8 +145,6 @@ class _DirScreenState extends State<DirScreen> {
       return [];
     }
 
-    Log.info("ResponsiveWrapper.of(context): ${ResponsiveWrapper.of(context)}");
-
     Map<String, dynamic> data = _data!["data"];
     if (data["mine_type"] == "directory") {
       List<dynamic> content = data["content"];
@@ -164,9 +168,12 @@ class _DirScreenState extends State<DirScreen> {
           currentPage: widget.page ?? 0,
           list: list,
           currentPath: widget.path,
+          pageSize: widget.size,
           onPush: (String item) => _redirect(widget.path + item),
           onPop: () => _redirect(widget.path.getParentPath()),
-          onJumpTo: (int pageIndex) {  },
+          onJumpTo: (int pageIndex, int pageSize) {
+            _redirect(widget.path, page: pageIndex, size: pageSize);
+          },
         ),
         if (list.containsKey("readme.md"))
           ...[
